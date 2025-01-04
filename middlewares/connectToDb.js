@@ -1,4 +1,5 @@
 const { Client } = require("pg");
+const MyCustomError = require("../utils/MyCustomError");
 require("dotenv").config();
 
 module.exports = async (req, res, next) => {
@@ -16,6 +17,6 @@ module.exports = async (req, res, next) => {
     await client.connect();
     next();
   } catch (error) {
-    next(error);
+    next(new MyCustomError(error.message, 500));
   }
 };
