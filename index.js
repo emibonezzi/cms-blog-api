@@ -17,9 +17,6 @@ app.get("/api/get-posts", connectToDb, async (req, res) => {
       .status(500)
       .json({ error: `Error in retrieving posts`, message: error.message });
   }
-
-  // close connection with db
-  await client.end();
 });
 
 // add new blog post
