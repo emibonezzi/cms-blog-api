@@ -1,6 +1,6 @@
 const express = require("express");
-const postSchema = require("./schemas/post");
-const connectToDb = require("./handlers/connectToDb");
+const connectToDb = require("./middlewares/connectToDb");
+const validateBody = require("./middlewares/validateBody");
 const app = express();
 
 // Built-in middleware for parsing URL-encoded data
@@ -30,14 +30,10 @@ app.get("/blog/posts/:id?", connectToDb, async (req, res) => {
 });
 
 // add new blog post
-app.post("/blog/posts", connectToDb, async (req, res) => {
-  // validate post
-  const result = postSchema.validate(req.body);
-
-  if (result.error) {
-    res.status(500).json({
-      error: "Post not valid",
-      message: result.error.details[0].message,
+app.post("/blog/posts", connectToDb, validateBody, async (req, res) => {
+  if (req.validationErrorCode) {
+    res.status(req.validationErrorCode).json({
+      message: req.validationErrorDetails,
     });
   } else {
     // add post to db
@@ -58,7 +54,7 @@ app.post("/blog/posts", connectToDb, async (req, res) => {
 });
 
 // update post
-app.patch("/blog/posts/:id?", connectToDb, async (req, res) => {
+app.patch("/blog/posts/:id?", connectToDb, validateBody, async (req, res) => {
   // if post id is passed
   if (req.params.id) {
     // look for post to update
@@ -72,12 +68,9 @@ app.patch("/blog/posts/:id?", connectToDb, async (req, res) => {
         message: "post_id doesn't exist",
       });
     } else {
-      // validate post
-      const result = postSchema.validate(req.body);
-      if (result.error) {
-        res.status(500).json({
-          error: "Post not valid",
-          message: result.error.details[0].message,
+      if (req.validationErrorCode) {
+        res.status(req.validationErrorCode).json({
+          message: req.validationErrorDetails,
         });
       } else {
         // update post in db
