@@ -23,19 +23,26 @@ app.get("/api/get-posts", connectToDb, async (req, res) => {
 app.post("/api/new-post", connectToDb, async (req, res) => {
   // validate post
   const result = postSchema.validate(req.body);
+
   if (result.error) {
     res.status(500).json({
       error: "Post not valid",
       message: result.error.details[0].message,
     });
+  } else {
+    // add post to db
+    try {
+      const post = await req.dbClient.query(
+        `INSERT INTO posts (title, body) VALUES ('${req.body.title}', '${req.body.body}') RETURNING *`
+      );
+
+      res.status(200).json(post.rows[0]);
+    } catch (error) {
+      res
+        .status(400)
+        .json({ error: "Error in saving post", message: error.message });
+    }
   }
-
-  // add post to db
-  const post = await req.dbClient.query(
-    `INSERT INTO posts (title, body) VALUES ('${req.body.title}', '${req.body.body}' )`
-  );
-
-  res.status(200).json(post);
 });
 
 // Error handling middleware
