@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/get-posts", connectToDb, async (req, res) => {
   // retrieve posts
   try {
-    const posts = await client.query("SELECT * FROM posts");
+    const posts = await req.dbClient.query("SELECT * FROM posts");
     res.status(200).json(posts.rows);
   } catch (error) {
     res
@@ -27,15 +27,18 @@ app.post("/api/new-post", connectToDb, async (req, res) => {
   // validate post
   const result = postSchema.validate(req.body);
   if (result.error) {
-    res
-      .status(500)
-      .json({
-        error: "Post not valid",
-        message: result.error.details[0].message,
-      });
-  } else {
-    res.status(200).json(req.body);
+    res.status(500).json({
+      error: "Post not valid",
+      message: result.error.details[0].message,
+    });
   }
+
+  // add post to db
+  const post = await req.dbClient.query(
+    `INSERT INTO posts (title, body) VALUES ('${req.body.title}', '${req.body.body}' )`
+  );
+
+  res.status(200).json(post);
 });
 
 // Error handling middleware

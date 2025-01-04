@@ -12,6 +12,7 @@ module.exports = async (req, res, next) => {
 
   // connect to db
   try {
+    req.dbClient = client;
     await client.connect();
     next();
   } catch (error) {
