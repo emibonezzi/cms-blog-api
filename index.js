@@ -1,18 +1,18 @@
 const express = require("express");
 const connectToDb = require("./middlewares/connectToDb");
 const validateBody = require("./middlewares/validateBody");
+const MyCustomError = require("./utils/MyCustomError");
+const searchPostId = require("./utils/searchPostId");
 const app = express();
 
 // Built-in middleware for parsing URL-encoded data
 app.use(express.urlencoded({ extended: true }));
 
 // get blog posts
-app.get("/blog/posts/:id?", connectToDb, async (req, res) => {
+app.get("/blog/posts/:id?", connectToDb, async (req, res, next) => {
   // if post id is passed
   if (req.params.id) {
-    const post = await req.dbClient.query(
-      `SELECT * FROM posts WHERE post_id=${req.params.id}`
-    );
+    const post = await searchPostId(req.params.id, req.dbClient);
     res.status(200).json(post.rows);
   } else {
     // retrieve ALL posts
@@ -20,9 +20,7 @@ app.get("/blog/posts/:id?", connectToDb, async (req, res) => {
       const posts = await req.dbClient.query("SELECT * FROM posts");
       res.status(200).json(posts.rows);
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: `Error in retrieving posts`, message: error.message });
+      next(new MyCustomError(error.message, 500));
     }
   }
 
@@ -48,42 +46,37 @@ app.post("/blog/posts", connectToDb, validateBody, async (req, res) => {
 });
 
 // update post
-app.patch("/blog/posts/:id?", connectToDb, validateBody, async (req, res) => {
-  // if post id is passed
-  if (req.params.id) {
-    // look for post to update
-    const post = await req.dbClient.query(
-      `SELECT * FROM posts WHERE post_id=${req.params.id}`
-    );
-    if (!post.rows.length === 0) {
-      // if post not found
-      res.status(400).json({
-        error: `Error in updating post`,
-        message: "post_id doesn't exist",
-      });
-    } else {
-      // update post in db
-      try {
-        const post = await req.dbClient.query(
-          `UPDATE posts SET title = '${req.body.title}', body = '${req.body.body}', modified_at = 'now()' WHERE post_id = ${req.params.id} RETURNING *`
-        );
+app.patch(
+  "/blog/posts/:id?",
+  connectToDb,
+  validateBody,
+  async (req, res, next) => {
+    // if post id is passed
+    if (req.params.id) {
+      // look for post to update
+      const post = await searchPostId(req.params.id, req.dbClient);
+      if (post.rows.length === 0) {
+        // if post not found
+        next(new MyCustomError("Post id doesn't exist", 400));
+      } else {
+        // update post in db
+        try {
+          const post = await req.dbClient.query(
+            `UPDATE posts SET title = '${req.body.title}', body = '${req.body.body}', modified_at = 'now()' WHERE post_id = ${req.params.id} RETURNING *`
+          );
 
-        res.status(200).json(post.rows);
-      } catch (error) {
-        res
-          .status(400)
-          .json({ error: "Error in updating post", message: error.message });
+          res.status(200).json(post.rows);
+        } catch (error) {
+          next(new MyCustomError(error.message, 500));
+        }
       }
+    } else {
+      next(new MyCustomError("Please provide a post_id", 400));
     }
-  } else {
-    res.status(400).json({
-      error: `Error in updating post`,
-      message: "Please provide a post_id",
-    });
-  }
 
-  await req.dbClient.end();
-});
+    await req.dbClient.end();
+  }
+);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
