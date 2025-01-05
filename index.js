@@ -28,7 +28,7 @@ app.get("/blog/posts/:id?", connectToDb, async (req, res, next) => {
 });
 
 // add new blog post
-app.post("/blog/posts", connectToDb, validateBody, async (req, res) => {
+app.post("/blog/posts", connectToDb, validateBody, async (req, res, next) => {
   // add post to db
   try {
     const post = await req.dbClient.query(
@@ -37,9 +37,7 @@ app.post("/blog/posts", connectToDb, validateBody, async (req, res) => {
 
     res.status(200).json(post.rows[0]);
   } catch (error) {
-    res
-      .status(400)
-      .json({ error: "Error in saving post", message: error.message });
+    next(new MyCustomError(error.message, 500));
   }
 
   await req.dbClient.end();
