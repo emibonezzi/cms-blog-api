@@ -2,25 +2,11 @@ const express = require("express");
 const searchPostId = require("../utils/searchPostId");
 const MyCustomError = require("../utils/MyCustomError");
 const validateBody = require("../middlewares/validateBody");
+const postController = require("../controllers/postController");
 const router = express.Router();
 
-router.get("/:id?", async (req, res, next) => {
-  // if post id is passed
-  if (req.params.id) {
-    const post = await searchPostId(req.params.id, req.dbClient);
-    res.status(200).json(post.rows);
-  } else {
-    // retrieve ALL posts
-    try {
-      const posts = await req.dbClient.query("SELECT * FROM posts");
-      res.status(200).json(posts.rows);
-    } catch (error) {
-      next(new MyCustomError(error.message, 500));
-    }
-  }
-
-  await req.dbClient.end();
-});
+router.get("/", postController.getAll);
+router.get("/:id", postController.getPost);
 
 router.post("/", validateBody, async (req, res, next) => {
   // add post to db
