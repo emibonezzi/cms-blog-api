@@ -82,4 +82,5 @@ router.delete("/:id?", async (req, res, next) => {
   await req.dbClient.end();
 });
 
-module.exports = router;
+const postsRoute = router;
+module.exports = postsRoute;
