@@ -1,6 +1,5 @@
 const express = require("express");
 const connectToDb = require("./middlewares/connectToDb");
-const router = require("./routes/postsRoute");
 const postsRoute = require("./routes/postsRoute");
 const app = express();
 
