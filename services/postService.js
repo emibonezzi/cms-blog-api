@@ -6,4 +6,11 @@ const getAllPosts = async (db) => {
   return await db.query("SELECT * FROM posts");
 };
 
-module.exports = { getAllPosts, getPostById };
+const createPost = async (body, db) => {
+  const newPost = await db.query(
+    `INSERT INTO posts (title, body) VALUES ('${body.title}', '${body.body}') RETURNING *`
+  );
+  return newPost.rows[0];
+};
+
+module.exports = { getAllPosts, getPostById, createPost };

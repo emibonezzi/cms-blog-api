@@ -1,29 +1,14 @@
 const express = require("express");
 const searchPostId = require("../utils/searchPostId");
 const MyCustomError = require("../utils/MyCustomError");
-const validateBody = require("../middlewares/validateBody");
 const postController = require("../controllers/postController");
 const router = express.Router();
 
 router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPost);
+router.post("/", postController.createPost);
 
-router.post("/", validateBody, async (req, res, next) => {
-  // add post to db
-  try {
-    const post = await req.dbClient.query(
-      `INSERT INTO posts (title, body) VALUES ('${req.body.title}', '${req.body.body}') RETURNING *`
-    );
-
-    res.status(200).json(post.rows[0]);
-  } catch (error) {
-    next(new MyCustomError(error.message, 500));
-  }
-
-  await req.dbClient.end();
-});
-
-router.patch("/:id?", validateBody, async (req, res, next) => {
+/* router.patch("/:id?", validateBody, async (req, res, next) => {
   // if post id is passed
   if (req.params.id) {
     // look for post to update
@@ -48,7 +33,7 @@ router.patch("/:id?", validateBody, async (req, res, next) => {
   }
 
   await req.dbClient.end();
-});
+}); */
 
 router.delete("/:id?", async (req, res, next) => {
   if (req.params.id) {
