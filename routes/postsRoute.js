@@ -5,7 +5,7 @@ const validateBody = require("../middlewares/validateBody");
 const postController = require("../controllers/postController");
 const router = express.Router();
 
-router.get("/", postController.getAll);
+router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPost);
 
 router.post("/", validateBody, async (req, res, next) => {

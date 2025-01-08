@@ -1,12 +1,11 @@
 const express = require("express");
-const connectToDb = require("./middlewares/connectToDb");
 const postsRoute = require("./routes/postsRoute");
 const app = express();
 
 // Built-in middleware for parsing URL-encoded data
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/blog/posts", connectToDb, postsRoute);
+app.use("/blog/posts", postsRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

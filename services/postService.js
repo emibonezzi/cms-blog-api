@@ -1,9 +1,9 @@
-const searchById = async (id) => {
-  return await req.dbClient.query(`SELECT * FROM posts WHERE post_id = ${id}`);
+const getPostById = async (id, db) => {
+  return await db.query(`SELECT * FROM posts WHERE post_id = ${id}`);
 };
 
-const getAllPosts = async () => {
-  return await req.dbClient.query("SELECT * FROM posts");
+const getAllPosts = async (db) => {
+  return await db.query("SELECT * FROM posts");
 };
 
-module.exports = { getAllPosts, searchById };
+module.exports = { getAllPosts, getPostById };
