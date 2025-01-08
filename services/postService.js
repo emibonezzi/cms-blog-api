@@ -1,5 +1,6 @@
 const getPostById = async (id, db) => {
-  return await db.query(`SELECT * FROM posts WHERE post_id = ${id}`);
+  const post = await db.query(`SELECT * FROM posts WHERE post_id = ${id}`);
+  return post.rows; //
 };
 
 const getAllPosts = async (db) => {
@@ -13,4 +14,11 @@ const createPost = async (body, db) => {
   return newPost.rows[0];
 };
 
-module.exports = { getAllPosts, getPostById, createPost };
+const updatePost = async (body, id, db) => {
+  const updatedPost = await db.query(
+    `UPDATE posts SET title = '${body.title}', body = '${body.body}', modified_at = 'now()' WHERE post_id = ${id} RETURNING *`
+  );
+  return updatedPost.rows[0];
+};
+
+module.exports = { getAllPosts, getPostById, createPost, updatePost };
