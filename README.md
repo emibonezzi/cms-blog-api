@@ -7,6 +7,7 @@ This repository provides a Node.js and Express.js based API for a Content Manage
 - Create new blog posts
 - Retrieve all blog posts or a specific post by ID
 - Update existing blog posts
+- Delete existing blog posts
 - Robust validation of request data using Joi
 - Custom error handling for informative responses
 
