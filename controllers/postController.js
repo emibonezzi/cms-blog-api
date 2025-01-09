@@ -76,3 +76,26 @@ exports.updatePost = async (req, res, next) => {
     db.release();
   }
 };
+
+exports.deletePost = async (req, res, next) => {
+  const db = await pool.connect();
+  const { id } = req.params;
+
+  if (!id) return next(new MyCustomError("Please provide post id", 400));
+
+  const postToUpdate = await postService.getPostById(id, db);
+
+  if (postToUpdate.length === 0) {
+    next(new MyCustomError("Post doesn't exist", 400));
+    return;
+  }
+
+  try {
+    const deletedPost = await postService.deletePost(id, db);
+    res.status(200).json(deletedPost);
+  } catch (error) {
+    next(new MyCustomError(error.message, 500));
+  } finally {
+    db.release();
+  }
+};
