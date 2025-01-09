@@ -9,7 +9,7 @@ app.use("/blog/posts", postsRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).json({ message: err.message });
+  res.status(err.statusCode).json({ error: err.message });
 });
 
 // start web server
